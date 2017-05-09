@@ -1,0 +1,1 @@
+{'meta': {'screen_name': 'natera', 'user_id': '27700085'}, 'score': 0.25, 'categories': {'content_classification': 0.43, 'user_classification': 0.14, 'network_classification': 0.18, 'temporal_classification': 0.34, 'friend_classification': 0.11, 'sentiment_classification': 0.08, 'languageagnostic_classification': 0.18}}
