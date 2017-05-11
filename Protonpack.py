@@ -38,22 +38,22 @@ def get_key(keyfile):
         sys.exit(1)
     return key
 
-
-"""def checkbot(bon):
+"""
+def checkbot(bon):
     results = list(bon.check_accounts_in(accounts))
     #print(results)
 """
 for bot in accounts:
     def checkbot(bon):
-        #results = list(bon.check_accounts_in(accounts))
-        results = bon.check_account("natera")
+        results = list(bon.check_accounts_in(accounts))
+        #results = bon.check_account("natera")
         with open("data.json", "w") as outf:
             outf.write(str(results))
 
         print(json.dumps(results, sort_keys=False, indent=1))
-        print(results["screen_name"] + ": " + results["score"])
+        #print(results["screen_name"] + ": " + results["score"])
 
-        """
+"""
         with open("data.json") as data_file:
             databot = json.load(data_file)
         pprint(databot)
