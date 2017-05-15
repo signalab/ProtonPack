@@ -2,6 +2,7 @@
 
 import botornot
 import json
+import ast
 from pprint import pprint
 
 # Twitter keys, place them in config folder
@@ -38,25 +39,40 @@ def get_key(keyfile):
         sys.exit(1)
     return key
 
-"""
+
 def checkbot(bon):
     results = list(bon.check_accounts_in(accounts))
     #print(results)
-"""
+
 for bot in accounts:
     def checkbot(bon):
         results = list(bon.check_accounts_in(accounts))
         #results = bon.check_account("natera")
-        with open("data.json", "w") as outf:
-            outf.write(str(results))
 
-        print(json.dumps(results, sort_keys=False, indent=1))
-        #print(results["screen_name"] + ": " + results["score"])
+
+        jsonString = str(results)
+
+        jsonString = jsonString.translate(str.maketrans({"(":  r"",
+                                                         ")": r"",
+                                                         "\'": "\""}))
+
+        finalJson = json.loads(jsonString)
+        #print(json.dumps(results, sort_keys=False, indent=1))
+        print(finalJson)
+
+        with open("data.json", "w") as outf:
+           outf.write(str(finalJson))
+
+         #Abrir Json desde archivo data.json
+           
+
+        #jsonObj = ast.literal_eval(finalJson)
+
 
 """
-        with open("data.json") as data_file:
-            databot = json.load(data_file)
-        pprint(databot)
+with open("data.json") as data_file:
+    databot = json.load(data_file)
+    pprint(databot)
 """
 
 
