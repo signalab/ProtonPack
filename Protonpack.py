@@ -12,7 +12,7 @@ accounts = accounts_file.read().split(',')
 
 
 __author__ = "Luis Natera"
-__credits__ = "BotOrNot"
+__credits__ = "BotOrNot" "Adrián Toscano"
 __license__ = "GPL"
 __version__ = "0.5"
 __maintainer__ = "Luis Natera"
@@ -20,8 +20,8 @@ __email__ = "nateraluis@gmail.com"
 __status__ = "Prototype"
 
 
-
 def main():
+    #Authenticate with Twitter
     key = get_key(KEYFILE)
     print("Succesfully authenticated as " + key["account"])
     bon = botornot.BotOrNot(**key)
@@ -39,46 +39,28 @@ def get_key(keyfile):
         sys.exit(1)
     return key
 
-
 def checkbot(bon):
-    results = list(bon.check_accounts_in(accounts))
-    #print(results)
+    results = bon.check_accounts_in(accounts)
+    print ("Cheking Accounts, please wait :)")
+    resultsBots = list(results)
+    jsonStr = json.dumps(resultsBots, sort_keys=False, indent=1)
+    print ("You have results")
 
-for bot in accounts:
-    def checkbot(bon):
-        results = list(bon.check_accounts_in(accounts))
-        #results = bon.check_account("natera")
+    resultJson = json.loads(jsonStr)
 
+    with open("data.json", "w") as outf:
+       outf.write(str(resultJson))
 
-        jsonString = str(results)
+    resultCounter = 0
 
-        jsonString = jsonString.translate(str.maketrans({"(":  r"",
-                                                         ")": r"",
-                                                         "\'": "\""}))
+    print('\nAccounts analyzed\n')
 
-        finalJson = json.loads(jsonString)
-        #print(json.dumps(results, sort_keys=False, indent=1))
-        print(finalJson)
+    for results in resultJson:
+        currentJson = results[1]
+        print (str(results[0]) +": " + str(currentJson['score']) + '\n')
+        resultCounter = resultCounter + 1
 
-        with open("data.json", "w") as outf:
-           outf.write(str(finalJson))
-
-         #Abrir Json desde archivo data.json
-           
-
-        #jsonObj = ast.literal_eval(finalJson)
-
-
-"""
-with open("data.json") as data_file:
-    databot = json.load(data_file)
-    pprint(databot)
-"""
-
-
+#Por hacer: Guardar CSV con datos de botornot y graficar la distribución de los bots de 0 a 1
 
 if __name__ == '__main__':
     main()
-
-
-#bon = botornot.BotOrNot(*key)
