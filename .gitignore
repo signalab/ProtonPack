@@ -2,4 +2,5 @@
 Config/mykey.json
 Config/accounts.txt
 data.json
-Accounts_Bots.csv
+Accounts_info.csv
+Accounts_info.json
