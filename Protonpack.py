@@ -40,27 +40,26 @@ def get_key(keyfile):
     return key
 
 def checkbot(bon):
-    results = bon.check_accounts_in(accounts)
-    print ("Cheking Accounts, please wait :)")
-    resultsBots = list(results)
-    jsonStr = json.dumps(resultsBots, sort_keys=False, indent=1)
-    print ("You have results")
+    with open ("Accounts_info" + ".csv", 'w') as file:
+        file.write("Id,Score" + '\n')
+        for account in accounts:
+            try:
+                print ("Account to check: " + account)
+                result = bon.check_account(account)
+                jsonStr = json.dumps(result, sort_keys=False, indent=1)
+                resultJson = json.loads(jsonStr)
+                score = str(resultJson['score'])
+                file.write(account + "," + score + '\n')
+                print ("Score: " + str(resultJson['score']))
+                print ("------")
+            except Exception as e:
+                print ("An exception occurred with account: " + account)
+                print (e)
+                print ("------")
+                file.write(account +"," + "Error" + '\n')
+                pass
 
-    resultJson = json.loads(jsonStr)
-
-    with open("data.json", "w") as outf:
-       outf.write(str(resultJson))
-
-    resultCounter = 0
-
-    print('\nAccounts analyzed\n')
-
-    for results in resultJson:
-        currentJson = results[1]
-        print (str(results[0]) +": " + str(currentJson['score']) + '\n')
-        resultCounter = resultCounter + 1
-
-#Por hacer: Guardar CSV con datos de botornot y graficar la distribución de los bots de 0 a 1
+#Por hacer: Graficar la distribución de los bots de 0 a 1
 
 if __name__ == '__main__':
     main()
