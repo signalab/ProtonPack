@@ -4,3 +4,4 @@ Config/accounts.txt
 data.json
 Accounts_info.csv
 Accounts_info.json
+*.csv
