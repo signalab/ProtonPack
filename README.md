@@ -1,4 +1,4 @@
-# ${1:ProtonPack}
+# ProtonPack
 ProtonPack is an implementation of the
 [Botometer](https://github.com/IUNetSci/botometer-python) python API.
 
