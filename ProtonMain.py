@@ -3,10 +3,11 @@
 import tweepy
 import botornot
 import json
-import ast
-from pprint import pprint
 import time
 import sys
+import matplotlib.pyplot as plt
+import pandas as pd
+import plotly.plotly as py
 
 __author__ = "Luis Natera"
 __credits__ = "BotOrNot" "Adrián Toscano"
@@ -18,15 +19,13 @@ __status__ = "Prototype"
 
 # Twitter keys, place them in config folder
 KEYFILE = "config/mykey.json"
-accounts_file = open("config/accounts.txt", "r")
-accounts = accounts_file.read().split(',')
 
-
+# Main menu to execute the code
 def menu ():
 	print('Please select an option:\n')
 	print('1.- Search an account.\n')
 	print('2.- Search an account and her followers.\n')
-	print('3.- Search the list of accounts in the "accounts.txt" file.\n')
+	print('3.- Search the list of accounts in a file.\n')
 	print('4.- I have no idea what I\'m doing, take me out\n')
 	op = input()
 	print ('\n')
@@ -35,8 +34,13 @@ def menu ():
 		botAccount()
 	elif op == '2':
 		botFollowers()
+		global df
+		df = pd.read_csv(accountCheck + '_Followers_BotScore.csv') #df = DataFrame
+		plotScores()
 	elif op == '3':
 		accountList(bon)
+		df = pd.read_csv('Accounts_Bots.csv') #df = DataFrame
+		plotScores()
 	elif op == '4':
 		exit()
 
@@ -55,7 +59,6 @@ def botAccount():
 			   + '\n'
 			   + '------'
 			   + '\n')
-#        print ("Score: " + str(resultJson['score']) + '\n')
 	except Exception as e:
 		print ('An exception ocurred:')
 		print (e) # Error, not printing the returned error
@@ -63,10 +66,11 @@ def botAccount():
 # Option 2
 def botFollowers():
 	twitterLogin()
+	global accountCheck
 	accountCheck = input ('Please type the username to check: @')
-	#Create file to store the followers network
 	listFollowers = open (accountCheck + '_Followers.csv', 'w')
-
+	global plotTitle
+	plotTitle = "for followers of @" + str(accountCheck)
 
 	listFollowers.write('Source,Target\n')
 	# Create a file to store the scores of the followers
@@ -88,13 +92,11 @@ def botFollowers():
 	users = tweepy.Cursor(api.followers, screen_name = accountCheck).items()
 	user_followers = api.get_user(screen_name=accountCheck)
 	no_followers = user_followers.followers_count
-	print ("Now we would check the "
-		   + str(no_followers)
-		   + ' followers of @'
-		   + accountCheck)
+	print ("Now we would check the " + str(no_followers) + ' followers of @' + accountCheck)
 	count = 0
 	startTime = time.time()
 
+	#for follower in no_followers:
 	while True:
 		try:
 			user = next(users)
@@ -111,28 +113,43 @@ def botFollowers():
 			print ("Elapsed Time: " + str((time.time() - startTime)/60) + " min")
 			print ("Aproximate time to go: "+ str((((time.time() - startTime)/count) * (no_followers - count) / 60)) + " min")
 			print ("------" + '\n')
+			time.sleep(3)
 			if count == no_followers:
-				sys.exit()
+				return followersScore
+				break
+
+		# except tweepy.TweepError:
+		# 	print ('Getting a time out, wait 15 minutes')
+		# 	time.sleep(60 * 15)
+		# 	continue
 
 		except Exception as e:
 			listFollowers.write(user.screen_name + "," + accountCheck + '\n')
-			print ("An exception occurred:")
+			print ("An exception occurred")
 			print (e)
-			listFollowers.write(user.screen_name +"," + "Null" + '\n')
+			listFollowers.write(user.screen_name +"," + accountCheck + '\n')
+			followersScore.write (user.screen_name +','+ 'Null' + '\n')
 			count += 1
 			print ('Accounts done: ' + str(count) + "/" + str(no_followers))
 			print ("Elapsed Time: " + str((time.time() - startTime)/60) + " min")
 			print ("Aproximate time to go: "+ str((((time.time() - startTime)/count) * (no_followers - count) / 60)) + " min")
 			print ("------" + '\n')
+			time.sleep(3)
 			if count == no_followers:
-				sys.exit()
+				return followersScore
+				break
 
 		except StopIteration:
-			sys.exit()
+			break
 
 
 # Option 3
 def accountList(bon):
+	accountsFileTxt = input ('Please type the name of the .txt file to analyse: ')
+	accounts_file = open(accountsFileTxt, "r")
+	global plotTitle
+	plotTitle = "of accounts in " + accountsFileTxt
+	accounts = accounts_file.read().split(',')
 	countAccounts = len(accounts)
 	with open ("Accounts_Bots" + ".csv", 'w') as file:
 		file.write("Id,Score" + '\n')
@@ -154,7 +171,6 @@ def accountList(bon):
 				print ("Aproximate time to go: "+ str((((time.time() - startTime)/accountsDone) * (countAccounts - accountsDone) / 60)) + " min")
 				print ("------" + '\n')
 
-
 			except Exception as e:
 				print ("An exception occurred:")
 				print (e)
@@ -170,6 +186,36 @@ def accountList(bon):
 def exit():
 	print('Have a nive day!\n')
 	sys.exit()
+
+# Count Scores frequency
+def getScoresFrequency():
+	#df = pd.read_csv(accountCheck + '_Followers_BotScore.csv') #df = DataFrame
+	scoresColumn = df.Score #scoresColumn = Series
+	scoreCountSet = set() # set of tuples
+	#Fill the set
+	for score in scoresColumn:
+		if score != 'Null':
+			scoreCountSet.add((score,1))
+	#Check frequency for each score
+	for score in scoresColumn:
+		for tup in scoreCountSet:
+			if tup[0] == score:
+				scoreValue = tup[1]
+				scoreCountSet.remove(tup)
+				newTup = (score, scoreValue + 1);
+				scoreCountSet.add(newTup)
+				break
+	return scoreCountSet
+
+# Plot the scores
+def plotScores():
+	scoresData = getScoresFrequency()
+	plt.scatter(*zip(*scoresData))
+	plt.title('Bot probability ' + plotTitle + '\n')
+	plt.xlabel("Bot Probability")
+	plt.ylabel("Accounts")
+	plt.savefig('BotProbability_' + plotTitle +'.png')
+	plt.show()
 
 # Authenticate with twitter and BotorNot
 def authenticate():
